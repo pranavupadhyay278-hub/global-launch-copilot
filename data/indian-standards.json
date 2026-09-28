@@ -1,0 +1,187 @@
+[
+  {
+    "isNumber": "IS 4375:2019",
+    "title": "Men's Cotton Knitted T-Shirts",
+    "productCategory": "Clothing & Apparel",
+    "keywords": [
+      "cotton t-shirt",
+      "cotton tshirt",
+      "cotton shirt",
+      "t-shirt",
+      "tshirt",
+      "tee shirt",
+      "knitted t-shirt",
+      "knitted tshirt",
+      "men's t-shirt",
+      "mens t-shirt",
+      "cotton knitted"
+    ],
+    "scope": "This standard relates to men's cotton knitted T-shirts.",
+    "requirements": [
+      "Product-specific requirements should be verified against the current BIS standard.",
+      "Applicable construction, material and performance requirements should be checked.",
+      "Current marking and testing requirements should be verified from the official BIS source."
+    ],
+    "evidenceNeeded": [
+      "Product specification",
+      "Material or fibre information",
+      "Relevant test reports",
+      "Product marking information"
+    ],
+    "authority": "Bureau of Indian Standards (BIS)",
+    "certificationStatus": "Verification Required",
+    "qcoStatus": "Verification Required",
+    "sourceType": "Official BIS source",
+    "sourceUrl": "https://www.bis.gov.in/know-your-standard/?lang=en",
+    "notes": "BIS lists IS 4375:2019 as Men's cotton knitted T-shirts. Verify the current standard details and applicability through the official BIS portal."
+  },
+  {
+    "isNumber": "IS 13003:2024",
+    "title": "Textiles - Cotton, Interlock Knitted Fabric - Specification",
+    "productCategory": "Clothing & Apparel",
+    "keywords": [
+      "cotton fabric",
+      "cotton knitted fabric",
+      "interlock knitted fabric",
+      "knitted cotton",
+      "cotton textile",
+      "textile fabric"
+    ],
+    "scope": "This standard concerns cotton interlock knitted fabric.",
+    "requirements": [
+      "Applicability depends on the fabric used in the product.",
+      "Current product and testing requirements should be verified against the official BIS standard."
+    ],
+    "evidenceNeeded": [
+      "Fabric specification",
+      "Material composition",
+      "Relevant test reports",
+      "Supplier or manufacturer fabric information"
+    ],
+    "authority": "Bureau of Indian Standards (BIS)",
+    "certificationStatus": "Verification Required",
+    "qcoStatus": "Verification Required",
+    "sourceType": "Official BIS source",
+    "sourceUrl": "https://standards.bis.gov.in/",
+    "notes": "BIS lists IS 13003:2024 for cotton interlock knitted fabric. Applicability to a finished garment should be verified."
+  },
+  {
+    "isNumber": "IS 15798 (Part 2):2021",
+    "title": "Textiles - Requirements for Labelling and Marking - Part 2: Fabrics, Apparels and Made-up Items - Consumer Textiles",
+    "productCategory": "Clothing & Apparel",
+    "keywords": [
+      "clothing label",
+      "apparel label",
+      "textile label",
+      "garment label",
+      "labelling",
+      "labeling",
+      "marking",
+      "apparel",
+      "consumer textiles",
+      "clothing"
+    ],
+    "scope": "This standard concerns requirements for labelling and marking of fabrics, apparels and made-up items in consumer textiles.",
+    "requirements": [
+      "Applicable labelling and marking requirements should be identified.",
+      "Product-specific applicability should be verified using the current BIS standard."
+    ],
+    "evidenceNeeded": [
+      "Product label",
+      "Packaging label",
+      "Product specification",
+      "Manufacturer information"
+    ],
+    "authority": "Bureau of Indian Standards (BIS)",
+    "certificationStatus": "Verification Required",
+    "qcoStatus": "Verification Required",
+    "sourceType": "Official BIS source",
+    "sourceUrl": "https://standards.bis.gov.in/",
+    "notes": "BIS standard information references IS 15798 (Part 2):2021 for fabrics, apparels and made-up items consumer textiles."
+  },
+  {
+    "isNumber": "IS 14543:2024",
+    "title": "Packaged Drinking Water Other Than Packaged Natural Mineral Water - Specification",
+    "productCategory": "Food & Beverages",
+    "keywords": [
+      "packaged drinking water",
+      "drinking water",
+      "bottled water",
+      "packaged water",
+      "water"
+    ],
+    "scope": "This standard relates to packaged drinking water other than packaged natural mineral water.",
+    "requirements": [
+      "Product requirements should be verified against the current BIS standard.",
+      "Applicable testing and quality requirements should be verified."
+    ],
+    "evidenceNeeded": [
+      "Water test reports",
+      "Product specification",
+      "Manufacturing information",
+      "Relevant certification or testing evidence"
+    ],
+    "authority": "Bureau of Indian Standards (BIS)",
+    "certificationStatus": "Verification Required",
+    "qcoStatus": "Verification Required",
+    "sourceType": "Official BIS source",
+    "sourceUrl": "https://lims.bis.gov.in/",
+    "notes": "Current BIS LIMS information lists IS 14543:2024 for packaged drinking water."
+  },
+  {
+    "isNumber": "IS 2347:2023",
+    "title": "Domestic Pressure Cooker - Specification",
+    "productCategory": "Household Products",
+    "keywords": [
+      "pressure cooker",
+      "domestic pressure cooker",
+      "cooker"
+    ],
+    "scope": "This standard relates to domestic pressure cookers.",
+    "requirements": [
+      "Applicable product requirements should be verified against the current BIS standard.",
+      "Testing and conformity requirements should be verified."
+    ],
+    "evidenceNeeded": [
+      "Product specification",
+      "Relevant test reports",
+      "Material information",
+      "Product marking information"
+    ],
+    "authority": "Bureau of Indian Standards (BIS)",
+    "certificationStatus": "Verification Required",
+    "qcoStatus": "Verification Required",
+    "sourceType": "Official BIS source",
+    "sourceUrl": "https://lims.bis.gov.in/",
+    "notes": "Current BIS LIMS information lists IS 2347:2023 for domestic pressure cookers."
+  },
+  {
+    "isNumber": "IS 2925:1984",
+    "title": "Specification for Industrial Safety Helmets",
+    "productCategory": "Safety Equipment",
+    "keywords": [
+      "industrial safety helmet",
+      "safety helmet",
+      "protective helmet",
+      "industrial helmet",
+      "hard hat"
+    ],
+    "scope": "This standard relates to industrial safety helmets.",
+    "requirements": [
+      "Applicable product requirements should be verified against the current BIS standard.",
+      "Testing and conformity requirements should be verified."
+    ],
+    "evidenceNeeded": [
+      "Product specification",
+      "Relevant test reports",
+      "Material information",
+      "Product marking information"
+    ],
+    "authority": "Bureau of Indian Standards (BIS)",
+    "certificationStatus": "Verification Required",
+    "qcoStatus": "Verification Required",
+    "sourceType": "Official BIS source",
+    "sourceUrl": "https://lims.bis.gov.in/",
+    "notes": "This standard is specifically associated with industrial safety helmets and should not be matched to ordinary clothing."
+  }
+]

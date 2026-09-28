@@ -1,0 +1,110 @@
+[
+  {
+    "productCategory": "Clothing & Apparel",
+    "originCountry": "India",
+    "targetMarket": "United States",
+    "requirementArea": "Textile labeling",
+    "requirement": "Verify applicable fiber-content, country-of-origin, and responsible-business identification labeling requirements for the garment.",
+    "status": "Verification Required",
+    "evidenceNeeded": [
+      "Product label",
+      "Fiber composition details",
+      "Country-of-origin information",
+      "Manufacturer or responsible business information"
+    ],
+    "authority": "U.S. Federal Trade Commission (FTC)",
+    "sourceType": "Official regulatory source",
+    "sourceUrl": "https://www.ftc.gov/business-guidance/industry/clothing-and-textiles",
+    "notes": "Most textile and wool products are subject to federal labeling requirements. Applicability should be verified for the specific product."
+  },
+  {
+    "productCategory": "Clothing & Apparel",
+    "originCountry": "India",
+    "targetMarket": "United States",
+    "requirementArea": "Care labeling",
+    "requirement": "Verify applicable care-labeling requirements and ensure appropriate care instructions are provided for the garment.",
+    "status": "Verification Required",
+    "evidenceNeeded": [
+      "Care label",
+      "Washing instructions",
+      "Drying instructions",
+      "Other applicable care instructions"
+    ],
+    "authority": "U.S. Federal Trade Commission (FTC)",
+    "sourceType": "Official regulatory source",
+    "sourceUrl": "https://www.ftc.gov/legal-library/browse/rules/care-labeling-textile-wearing-apparel-certain-piece-goods",
+    "notes": "The Care Labeling Rule covers textile wearing apparel and requires appropriate care information."
+  },
+  {
+    "productCategory": "Clothing & Apparel",
+    "originCountry": "India",
+    "targetMarket": "United States",
+    "requirementArea": "Country of origin",
+    "requirement": "Verify that the garment contains the required country-of-origin information and that the placement and presentation are appropriate for the product.",
+    "status": "Verification Required",
+    "evidenceNeeded": [
+      "Country-of-origin label",
+      "Product label",
+      "Packaging or hang tag where applicable"
+    ],
+    "authority": "U.S. Federal Trade Commission (FTC)",
+    "sourceType": "Official regulatory source",
+    "sourceUrl": "https://www.ftc.gov/business-guidance/resources/complying-made-usa-standard",
+    "notes": "Country-of-origin requirements depend on the product and manufacturing circumstances."
+  },
+  {
+    "productCategory": "Clothing & Apparel",
+    "originCountry": "India",
+    "targetMarket": "United States",
+    "requirementArea": "Clothing textile flammability",
+    "requirement": "Determine whether the clothing textile is subject to the applicable flammability requirements and whether the required performance/testing evidence is available.",
+    "status": "Verification Required",
+    "evidenceNeeded": [
+      "Material information",
+      "Fabric specifications",
+      "Applicable test report",
+      "Laboratory evidence where required"
+    ],
+    "authority": "U.S. Consumer Product Safety Commission (CPSC)",
+    "sourceType": "Official regulatory source",
+    "sourceUrl": "https://www.cpsc.gov/FAQ/Clothing",
+    "notes": "CPSC identifies 16 CFR Part 1610 as the general wearing apparel flammability standard. Applicability and any testing exemptions should be verified for the specific material and garment."
+  },
+  {
+    "productCategory": "Clothing & Apparel",
+    "originCountry": "India",
+    "targetMarket": "United States",
+    "requirementArea": "Testing evidence",
+    "requirement": "Determine whether product-specific testing or other evidence is applicable and maintain supporting records.",
+    "status": "Verification Required",
+    "evidenceNeeded": [
+      "Laboratory test report",
+      "Product specifications",
+      "Material details",
+      "Testing records"
+    ],
+    "authority": "U.S. Consumer Product Safety Commission (CPSC)",
+    "sourceType": "Official regulatory source",
+    "sourceUrl": "https://www.cpsc.gov/Business--Manufacturing/Business-Education/Business-Guidance/Flammable-Fabrics-Act",
+    "notes": "Testing requirements depend on the specific product, material and applicable requirements."
+  },
+  {
+    "productCategory": "Clothing & Apparel",
+    "originCountry": "India",
+    "targetMarket": "United States",
+    "requirementArea": "Compliance documentation",
+    "requirement": "Maintain product, supplier, material, labeling and testing evidence needed to support the compliance assessment.",
+    "status": "Verification Required",
+    "evidenceNeeded": [
+      "Technical documents",
+      "Supplier information",
+      "Test reports",
+      "Product labels",
+      "Material specifications"
+    ],
+    "authority": "Multiple applicable U.S. regulatory sources",
+    "sourceType": "Compliance documentation",
+    "sourceUrl": "https://www.ftc.gov/business-guidance/industry/clothing-and-textiles",
+    "notes": "The exact evidence set depends on the product and applicable requirements."
+  }
+]
