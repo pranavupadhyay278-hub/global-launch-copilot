@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { CanvasFactory } from "pdf-parse/worker";
-
 import indianStandards from "../../../data/indian-standards.json";
 
 export const runtime = "nodejs";
@@ -139,33 +137,6 @@ const standards: Standard[] = rawStandards.map((standard) => ({
   return matches;
 }
 
-
-async function extractPdfText(buffer: Buffer): Promise<string> {
-  console.log("Starting local PDF text extraction...");
-
-  // Load PDF libraries only when a PDF is actually being processed.
-  // This prevents DOMMatrix/pdf.js from being loaded for image uploads.
-  const { CanvasFactory } = await import("pdf-parse/worker");
-  const { PDFParse } = await import("pdf-parse");
-
-  const parser = new PDFParse({
-    data: new Uint8Array(buffer),
-    CanvasFactory,
-  });
-
-  try {
-    const result = await parser.getText();
-    const text = result.text?.trim() || "";
-
-    console.log(
-      `PDF text extraction completed. Extracted characters: ${text.length}`
-    );
-
-    return text;
-  } finally {
-    await parser.destroy();
-  }
-}
 
 function buildEvidence(
   standards: MatchedStandard[],
@@ -483,9 +454,10 @@ export async function POST(request: NextRequest) {
 
     let documentText = "";
 
-    if (file.type === "application/pdf") {
-      documentText = await extractPdfText(buffer);
-    } else {
+   if (file.type === "application/pdf") {
+  const { extractPdfText } = await import("./pdf-parser");
+  documentText = await extractPdfText(buffer);
+} else {
   documentText =
     "Image document uploaded successfully. Text extraction from this image is not available in the current local prototype. Visual compliance evidence requires verification.";
 }
