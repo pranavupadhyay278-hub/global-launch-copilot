@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { PDFParse } from "pdf-parse";
+import { CanvasFactory } from "pdf-parse/worker";
+
 import indianStandards from "../../../data/indian-standards.json";
 
 export const runtime = "nodejs";
@@ -142,17 +143,23 @@ const standards: Standard[] = rawStandards.map((standard) => ({
 async function extractPdfText(buffer: Buffer): Promise<string> {
   console.log("Starting local PDF text extraction...");
 
+  // Load PDF libraries only when a PDF is actually being processed.
+  // This prevents DOMMatrix/pdf.js from being loaded for image uploads.
+  const { CanvasFactory } = await import("pdf-parse/worker");
+  const { PDFParse } = await import("pdf-parse");
+
   const parser = new PDFParse({
     data: new Uint8Array(buffer),
+    CanvasFactory,
   });
 
   try {
     const result = await parser.getText();
-
     const text = result.text?.trim() || "";
 
-    console.log("PDF text extraction completed.");
-    console.log("PDF text length:", text.length);
+    console.log(
+      `PDF text extraction completed. Extracted characters: ${text.length}`
+    );
 
     return text;
   } finally {
