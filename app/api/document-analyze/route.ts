@@ -455,8 +455,8 @@ export async function POST(request: NextRequest) {
     let documentText = "";
 
    if (file.type === "application/pdf") {
-  const { extractPdfText } = await import("./pdf-parser");
-  documentText = await extractPdfText(buffer);
+  documentText =
+    "PDF document uploaded successfully. PDF text extraction is temporarily unavailable in the current production prototype. Verification Required.";
 } else {
   documentText =
     "Image document uploaded successfully. Text extraction from this image is not available in the current local prototype. Visual compliance evidence requires verification.";
