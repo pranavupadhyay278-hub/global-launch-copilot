@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-export default function FounderBridgePage() {
+function FounderBridgePageContent() {
   const params = useSearchParams();
 
   const product = params.get("product") || "Cotton T-Shirt";
@@ -528,8 +528,24 @@ export default function FounderBridgePage() {
 
         </div>
 
-      </footer>
+          </footer>
 
     </main>
+  );
+}
+
+export default function FounderBridgePage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="text-sm text-slate-600">
+            Loading FounderBridge...
+          </div>
+        </main>
+      }
+    >
+      <FounderBridgePageContent />
+    </Suspense>
   );
 }

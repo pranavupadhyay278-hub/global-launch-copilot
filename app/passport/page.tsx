@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 type RequirementStatus =
   | "Completed"
@@ -16,7 +16,7 @@ type Requirement = {
   evidence: string;
 };
 
-export default function PassportPage() {
+function PassportPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -813,5 +813,20 @@ export default function PassportPage() {
       </footer>
 
     </main>
+  );
+}
+export default function PassportPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="text-sm text-slate-600">
+            Loading Passport...
+          </div>
+        </main>
+      }
+    >
+      <PassportPageContent />
+    </Suspense>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 type DocumentAnalysisResult = {
   success?: boolean;
@@ -117,7 +117,7 @@ function InfoCard({
   );
 }
 
-export default function DocumentsPage() {
+function DocumentsPageContent() {
   const searchParams = useSearchParams();
 
   const product =
@@ -577,5 +577,21 @@ export default function DocumentsPage() {
         </div>
       </footer>
     </main>
+  );
+}
+
+export default function DocumentsPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="text-sm text-slate-600">
+            Loading documents...
+          </div>
+        </main>
+      }
+    >
+      <DocumentsPageContent />
+    </Suspense>
   );
 }

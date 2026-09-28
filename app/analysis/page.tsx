@@ -1,8 +1,9 @@
 "use client";
 
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 type Standard = {
   isNumber: string;
@@ -181,7 +182,7 @@ function StatusBadge({
    PAGE
    ========================================================= */
 
-export default function AnalysisPage() {
+function AnalysisPageContent() {
   const searchParams = useSearchParams();
 
   const [loading, setLoading] =
@@ -868,3 +869,18 @@ export default function AnalysisPage() {
     </main>
   );
 }
+export default function AnalysisPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+          <div className="text-sm text-slate-600">
+            Loading analysis...
+          </div>
+        </main>
+      }
+    >
+      <AnalysisPageContent />
+    </Suspense>
+  );
+} 
