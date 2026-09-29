@@ -1,10 +1,7 @@
+@'
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  serverExternalPackages: [
-    "pdf-parse",
-    "@napi-rs/canvas",
-  ],
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
+'@ | Set-Content .\next.config.ts
