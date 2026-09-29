@@ -1,532 +1,322 @@
-import { NextRequest, NextResponse } from "next/server";
-
-import indianStandards from "../../../data/indian-standards.json";
+import { NextResponse } from "next/server";
+import { GoogleGenAI } from "@google/genai";
+import mammoth from "mammoth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Standard = {
-  id: string;
-  title: string;
-  category: string;
-  keywords?: string[];
-  scope?: string;
-  requirements?: string[];
-  evidence?: string[];
-  authority?: string;
-  certificationStatus?: string;
-  qcoStatus?: string;
-  sourceType?: string;
-  sourceUrl?: string;
-  notes?: string;
-};
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
-type RawIndianStandard = {
-  isNumber: string;
-  title: string;
-  productCategory: string;
-  keywords?: string[];
-  scope?: string;
-  requirements?: string[];
-  evidenceNeeded?: string[];
-  authority?: string;
-  certificationStatus?: string;
-  qcoStatus?: string;
-  sourceType?: string;
-  sourceUrl?: string;
-  notes?: string;
-};
-
-type MatchedStandard = Standard & {
-  score: number;
-};
-
-function normalize(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function retrieveStandards(
-  product: string,
-  category: string,
-  documentText: string
-): MatchedStandard[] {
-  const productText = normalize(product);
-  const categoryText = normalize(category);
-  const document = normalize(documentText);
-
-  const productWords = productText
-    .split(" ")
-    .filter((word) => word.length >= 3);
-
-  const rawStandards = indianStandards as RawIndianStandard[];
-
-const standards: Standard[] = rawStandards.map((standard) => ({
-  id: standard.isNumber,
-  title: standard.title,
-  category: standard.productCategory,
-  keywords: standard.keywords || [],
-  scope: standard.scope || "",
-  requirements: standard.requirements || [],
-  evidence: standard.evidenceNeeded || [],
-  authority: standard.authority || "",
-  certificationStatus: standard.certificationStatus || "",
-  qcoStatus: standard.qcoStatus || "",
-  sourceType: standard.sourceType || "",
-  sourceUrl: standard.sourceUrl || "",
-  notes: standard.notes || "",
-}));
-
-  const matches = standards
-    .map((standard) => {
-      let score = 0;
-
-      const title = normalize(standard.title || "");
-      const standardCategory = normalize(standard.category || "");
-      const scope = normalize(standard.scope || "");
-      const keywords = (standard.keywords || []).map(normalize);
-
-      // Category match
-      if (
-        categoryText &&
-        standardCategory &&
-        standardCategory === categoryText
-      ) {
-        score += 20;
-      }
-
-      // Product title match
-      if (productText && title.includes(productText)) {
-        score += 30;
-      }
-
-      // Product words
-      for (const word of productWords) {
-        if (title.includes(word)) {
-          score += 8;
-        }
-
-        if (scope.includes(word)) {
-          score += 5;
-        }
-
-        if (keywords.some((keyword) => keyword.includes(word))) {
-          score += 6;
-        }
-      }
-
-      // Document evidence can also help identify the standard
-      for (const keyword of keywords) {
-        if (keyword.length >= 3 && document.includes(keyword)) {
-          score += 3;
-        }
-      }
-
-      return {
-        ...standard,
-        score,
-      };
-    })
-    .filter((standard) => standard.score >= 15)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
-
-  return matches;
-}
-
-
-function buildEvidence(
-  standards: MatchedStandard[],
-  product: string,
-  category: string
-) {
-  if (standards.length === 0) {
-    return "No sufficiently relevant Indian Standard was retrieved from the current prototype knowledge base.";
-  }
-
-  return standards
-    .map(
-      (standard, index) => `
-STANDARD ${index + 1}
-ID: ${standard.id}
-TITLE: ${standard.title}
-CATEGORY: ${standard.category}
-MATCH SCORE: ${standard.score}
-SCOPE: ${standard.scope || "Not specified in prototype data"}
-REQUIREMENTS:
-${(standard.requirements || []).map((item) => `- ${item}`).join("\n")}
-
-EXPECTED EVIDENCE:
-${(standard.evidence || []).map((item) => `- ${item}`).join("\n")}
-
-AUTHORITY: ${standard.authority || "Not specified"}
-CERTIFICATION STATUS: ${
-        standard.certificationStatus || "Verification Required"
-      }
-QCO STATUS: ${standard.qcoStatus || "Verification Required"}
-SOURCE TYPE: ${standard.sourceType || "Official source to verify"}
-SOURCE URL: ${standard.sourceUrl || "Not provided"}
-NOTES: ${standard.notes || "Verify current applicability."}
-`
-    )
-    .join("\n");
-}
-
-async function askLocalAI(params: {
-  product: string;
-  category: string;
-  origin: string;
-  market: string;
-  documentText: string;
-  standards: MatchedStandard[];
-}) {
-  const {
-    product,
-    category,
-    origin,
-    market,
-    documentText,
-    standards,
-  } = params;
-
-  const evidence = buildEvidence(standards, product, category);
-
-  const safeDocumentText =
-    documentText.length > 6000
-      ? documentText.slice(0, 6000) + "\n[Document text truncated]"
-      : documentText;
-
-  const prompt = `
-You are the document-analysis reasoning module of an Indian Standards compliance application.
-
-PRODUCT
-${product}
-
-CATEGORY
-${category}
-
-ORIGIN
-${origin}
-
-TARGET MARKET
-${market}
-
-DOCUMENT TEXT EXTRACTED LOCALLY
-${safeDocumentText || "[No readable text extracted]"}
-
-RETRIEVED INDIAN STANDARDS
-${evidence}
-
-TASK
-
-Analyze ONLY the extracted document text and the retrieved standards evidence.
-
-Do not invent:
-- standards
-- certificates
-- test results
-- regulatory requirements
-- dates
-- manufacturer details
-- compliance status
-
-Do not assume that a document proves compliance merely because its wording looks similar to a standard.
-
-If evidence is missing, say "Verification Required".
-
-Return a concise report using EXACTLY these headings:
-
-1. Document Type
-2. Extracted Information
-3. Product / Manufacturer Information
-4. Testing / Certification Evidence
-5. Indian Standards Evidence Mapping
-6. Missing or Verification-Required Evidence
-7. Potential Compliance Gaps
-8. Recommended Next Actions
-
-For each standard, explain whether the document contains relevant evidence:
-- Evidence Found
-- Partial Evidence
-- No Evidence Found
-- Verification Required
-
-Keep the answer concise and practical.
-
-This is preliminary AI-assisted guidance, not legal or certification advice.
-`;
-
-  console.log("Sending document evidence to local Qwen...");
-
-  const response = await fetch("http://localhost:11434/api/chat", {
-    method: "POST",
+function json(data: any, status = 200) {
+  return NextResponse.json(data, {
+    status,
     headers: {
       "Content-Type": "application/json",
     },
-    signal: AbortSignal.timeout(120000),
-    body: JSON.stringify({
-      model: "qwen3:4b",
-      think: false,
-      keep_alive: "10m",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a concise compliance-document reasoning assistant. Use only the provided document text and retrieved Indian Standards evidence. Never invent facts.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      stream: false,
-      options: {
-        temperature: 0.1,
-        num_predict: 220,
-        num_ctx: 4096,
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-
-    throw new Error(
-      `Local Qwen request failed: ${response.status} ${errorText}`
-    );
-  }
-
-  const data = await response.json();
-
-  const content = data?.message?.content?.trim() || "";
-
-  console.log("Local Qwen document response received:", {
-    hasMessage: Boolean(data?.message),
-    hasContent: Boolean(content),
-    contentLength: content.length,
-    done: data?.done,
-    doneReason: data?.done_reason,
-  });
-
-  if (!content) {
-    throw new Error("Local Qwen returned an empty document analysis.");
-  }
-
-  return content;
-}
-
-function createFallbackAnalysis(params: {
-  product: string;
-  category: string;
-  documentText: string;
-  standards: MatchedStandard[];
-}) {
-  const { product, category, documentText, standards } = params;
-
-  const documentAvailable = documentText.trim().length > 0;
-
-  let analysis = "";
-
-  analysis += `1. Document Type\n`;
-  analysis += `The uploaded document was processed using local document extraction.\n\n`;
-
-  analysis += `2. Extracted Information\n`;
-  analysis += documentAvailable
-    ? `Readable text was extracted from the uploaded document.`
-    : `No reliable readable text was extracted from the uploaded document.`;
-
-  analysis += `\n\n`;
-
-  analysis += `3. Product / Manufacturer Information\n`;
-  analysis += `Product context: ${product}\n`;
-  analysis += `Category: ${category}\n`;
-  analysis += `Manufacturer information: Verification Required\n\n`;
-
-  analysis += `4. Testing / Certification Evidence\n`;
-  analysis += `Testing or certification evidence must be verified against the actual document contents and applicable requirements.\n\n`;
-
-  analysis += `5. Indian Standards Evidence Mapping\n`;
-
-  if (standards.length === 0) {
-    analysis += `No sufficiently relevant Indian Standard was retrieved from the current prototype knowledge base.\n`;
-  } else {
-    for (const standard of standards) {
-      analysis += `- ${standard.id} — ${standard.title}: Verification Required\n`;
-    }
-  }
-
-  analysis += `\n6. Missing or Verification-Required Evidence\n`;
-  analysis += `- Certificate/test report authenticity: Verification Required\n`;
-  analysis += `- Applicability of each identified standard: Verification Required\n`;
-  analysis += `- Product-specific evidence: Verification Required\n`;
-
-  analysis += `\n7. Potential Compliance Gaps\n`;
-  analysis += `The current prototype cannot establish compliance solely from the uploaded document. Additional evidence may be required.\n`;
-
-  analysis += `\n8. Recommended Next Actions\n`;
-  analysis += `- Verify the identified Indian Standards through the relevant official source.\n`;
-  analysis += `- Check whether the uploaded document contains the required product, testing and certification evidence.\n`;
-  analysis += `- Obtain missing evidence where required.\n`;
-
-  return analysis;
-}
-
-export async function GET() {
-  return NextResponse.json({
-    success: true,
-    service: "Global Launch Copilot Document AI",
-    engine: "Local OCR + Indian Standards Retrieval + Local Qwen AI",
-    model: "qwen3:4b",
   });
 }
 
-export async function POST(request: NextRequest) {
-  console.log("DOCUMENT ANALYZE LOCAL AI ROUTE STARTED");
+export async function POST(request: Request) {
+  console.log("DOCUMENT ANALYZE ROUTE STARTED");
 
   try {
-    const formData = await request.formData();
+    const apiKey =
+      process.env.GEMINI_API_KEY ||
+      process.env.GOOGLE_API_KEY ||
+      process.env.GEMINI_API_KEY;
 
-    const file = formData.get("file") as File | null;
-    const product = String(formData.get("product") || "");
-    const category = String(formData.get("category") || "");
-    const origin = String(formData.get("origin") || "India");
-    const market = String(formData.get("market") || "India");
-
-    if (!file) {
-      return NextResponse.json(
+    if (!apiKey) {
+      return json(
         {
           success: false,
-          error: "No document was uploaded.",
+          error:
+            "Gemini API key is missing. Add GEMINI_API_KEY in .env.local and Vercel Environment Variables.",
         },
-        { status: 400 }
+        500
       );
     }
 
-    if (!product || !category) {
-      return NextResponse.json(
+    const formData = await request.formData();
+
+    const fileEntry = formData.get("file");
+
+    if (!(fileEntry instanceof File)) {
+      return json(
         {
           success: false,
-          error: "Product and category are required.",
+          error: "No document was uploaded. Please select a PDF, image or DOCX file.",
         },
-        { status: 400 }
+        400
       );
+    }
+
+    const file = fileEntry;
+
+    console.log("FILE:", file.name);
+    console.log("TYPE:", file.type);
+    console.log("SIZE:", file.size);
+
+    if (file.size === 0) {
+      return json(
+        {
+          success: false,
+          error: "The selected file is empty.",
+        },
+        400
+      );
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return json(
+        {
+          success: false,
+          error: "File is too large. Please upload a file smaller than 10 MB.",
+        },
+        400
+      );
+    }
+
+    const fileName = file.name.toLowerCase();
+
+    let mimeType = file.type;
+
+    // Fix browsers that sometimes send an empty MIME type
+    if (!mimeType) {
+      if (fileName.endsWith(".pdf")) mimeType = "application/pdf";
+      else if (fileName.endsWith(".docx")) {
+        mimeType =
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      } else if (fileName.endsWith(".png")) mimeType = "image/png";
+      else if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
+        mimeType = "image/jpeg";
+      } else if (fileName.endsWith(".webp")) mimeType = "image/webp";
     }
 
     const allowedTypes = [
       "application/pdf",
+      "image/png",
       "image/jpeg",
       "image/jpg",
-      "image/png",
       "image/webp",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
-    if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json(
+    const allowedExtensions = [
+      ".pdf",
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".webp",
+      ".docx",
+    ];
+
+    const extensionAllowed = allowedExtensions.some((ext) =>
+      fileName.endsWith(ext)
+    );
+
+    const typeAllowed = allowedTypes.includes(mimeType);
+
+    if (!typeAllowed && !extensionAllowed) {
+      return json(
         {
           success: false,
-          error: "Only PDF, JPG, PNG and WEBP files are supported.",
+          error:
+            "Unsupported file type. Please upload PDF, PNG, JPG, JPEG, WEBP or DOCX.",
         },
-        { status: 400 }
+        400
       );
     }
 
-    const maxSize = 10 * 1024 * 1024;
+    const prompt = `
+You are an AI compliance evidence analyzer for Global Launch Copilot.
 
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "File size must be 10 MB or smaller.",
-        },
-        { status: 400 }
-      );
-    }
+Analyze the uploaded evidence document carefully.
 
-    console.log("File:", file.name);
-    console.log("Type:", file.type);
-    console.log("Size:", file.size);
+Identify:
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+1. Document type
+2. Company/manufacturer name if visible
+3. Product name
+4. Product category
+5. Standard/certification mentioned
+6. Certificate or report number
+7. Issue date
+8. Expiry date
+9. Testing laboratory or certification body
+10. Important technical information
+11. Labels/markings mentioned
+12. Evidence that appears useful for compliance
+13. Missing or unclear information
+14. Potential compliance gaps
+15. Recommended next verification steps
 
-    let documentText = "";
+IMPORTANT:
+- Do not invent certificate numbers, standards or dates.
+- If information is not visible, say "Not found in document".
+- Clearly distinguish extracted facts from recommendations.
+- This is compliance intelligence, not legal certification.
 
-   if (file.type === "application/pdf") {
-  documentText =
-    "PDF document uploaded successfully. PDF text extraction is temporarily unavailable in the current production prototype. Verification Required.";
-} else {
-  documentText =
-    "Image document uploaded successfully. Text extraction from this image is not available in the current local prototype. Visual compliance evidence requires verification.";
-}
+Return a clear, professional report using headings and bullet points.
+`;
 
-    console.log("Document text extracted.");
-
-    const standards = retrieveStandards(
-      product,
-      category,
-      documentText
-    );
-
-    console.log(
-      "Matched Indian Standards:",
-      standards.map((standard) => `${standard.id} (${standard.score})`)
-    );
-
-    let analysis = "";
-
-    try {
-      analysis = await askLocalAI({
-        product,
-        category,
-        origin,
-        market,
-        documentText,
-        standards,
-      });
-
-      console.log("Local document AI analysis completed successfully.");
-    } catch (aiError) {
-      console.error("Local Qwen document analysis failed:", aiError);
-
-      analysis = createFallbackAnalysis({
-        product,
-        category,
-        documentText,
-        standards,
-      });
-    }
-
-    return NextResponse.json({
-      success: true,
-      fileName: file.name,
-      fileType: file.type,
-      extractedTextLength: documentText.length,
-      standardsCount: standards.length,
-      matchedStandards: standards.map((standard) => ({
-        id: standard.id,
-        title: standard.title,
-        category: standard.category,
-        score: standard.score,
-        sourceUrl: standard.sourceUrl,
-      })),
-      analysis,
-      engine: "Local OCR + Indian Standards Retrieval + Qwen 3:4b",
+    const ai = new GoogleGenAI({
+      apiKey,
     });
-  } catch (error) {
+
+    let analysisText = "";
+
+    // ---------------------------------------------------------
+    // DOCX
+    // ---------------------------------------------------------
+
+    if (
+      fileName.endsWith(".docx") ||
+      mimeType ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ) {
+      console.log("Processing DOCX...");
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+
+      const result = await mammoth.extractRawText({
+        buffer,
+      });
+
+      const extractedText = result.value?.trim();
+
+      if (!extractedText) {
+        return json(
+          {
+            success: false,
+            error:
+              "The DOCX file was opened, but no readable text was found inside it.",
+          },
+          400
+        );
+      }
+
+      console.log("DOCX TEXT EXTRACTED:", extractedText.length);
+
+      const response = await ai.models.generateContent({
+        model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+        contents: [
+          {
+            text: `${prompt}
+
+DOCUMENT NAME:
+${file.name}
+
+DOCUMENT TEXT:
+${extractedText.slice(0, 120000)}
+`,
+          },
+        ],
+      });
+
+      analysisText = response.text || "";
+    }
+
+    // ---------------------------------------------------------
+    // PDF + IMAGE
+    // ---------------------------------------------------------
+
+    else {
+      console.log("Processing PDF/IMAGE...");
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const base64Data = buffer.toString("base64");
+
+      const response = await ai.models.generateContent({
+        model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+        contents: [
+          {
+            text: `${prompt}
+
+DOCUMENT NAME:
+${file.name}
+`,
+          },
+          {
+            inlineData: {
+              mimeType,
+              data: base64Data,
+            },
+          },
+        ],
+      });
+
+      analysisText = response.text || "";
+    }
+
+    if (!analysisText.trim()) {
+      return json(
+        {
+          success: false,
+          error:
+            "The AI service returned an empty analysis. Please try the document again.",
+        },
+        502
+      );
+    }
+
+    console.log("DOCUMENT ANALYSIS COMPLETED");
+
+    // Return several compatible fields so your existing frontend
+    // can consume the response without breaking.
+    return json({
+      success: true,
+      analysis: analysisText,
+      result: analysisText,
+      text: analysisText,
+      fileName: file.name,
+      fileType: mimeType,
+      fileSize: file.size,
+    });
+  } catch (error: any) {
     console.error("DOCUMENT ANALYZE ERROR:", error);
 
-    return NextResponse.json(
+    let message = "Document analysis failed.";
+
+    if (error?.message) {
+      message = error.message;
+    }
+
+    // Make common Gemini errors understandable
+    if (
+      message.includes("429") ||
+      message.toLowerCase().includes("quota")
+    ) {
+      message =
+        "Gemini API quota is temporarily exhausted. Please try again later or use a Gemini API key with available quota.";
+    }
+
+    if (
+      message.includes("503") ||
+      message.toLowerCase().includes("high demand")
+    ) {
+      message =
+        "Gemini is temporarily busy. Please try the analysis again.";
+    }
+
+    if (
+      message.includes("404") ||
+      message.toLowerCase().includes("not found")
+    ) {
+      message =
+        "The configured Gemini model is unavailable. Check GEMINI_MODEL in Vercel Environment Variables.";
+    }
+
+    // CRITICAL:
+    // ALWAYS return JSON.
+    // This prevents:
+    // Unexpected token 'S'
+    // Unexpected end of JSON input
+    return json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Document analysis failed.",
+        error: message,
       },
-      { status: 500 }
+      500
     );
   }
 }
